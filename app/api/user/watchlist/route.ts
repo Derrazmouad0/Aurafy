@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
-import { connectToDatabase } from "../../../lib/mongodb";
-import User from "../../../models/User";
+import { connectToDatabase } from "../../../../lib/mongodb";
+import User from "../../../../models/User";
 
 // Récupérer la Watchlist de l'utilisateur
 export async function GET() {

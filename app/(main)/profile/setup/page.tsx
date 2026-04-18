@@ -1,0 +1,72 @@
+"use client";
+
+import { useState } from "react";
+import { useSession } from "next-auth/react";
+import { useRouter, useSearchParams } from "next/navigation";
+import Image from "next/image";
+
+const AVATARS = [
+  "https://api.dicebear.com/7.x/avataaars/svg?seed=Felix&backgroundColor=b6e3f4",
+  "https://api.dicebear.com/7.x/avataaars/svg?seed=Aneka&backgroundColor=ffdfbf",
+  "https://api.dicebear.com/7.x/avataaars/svg?seed=Mimi&backgroundColor=c0aede",
+  "https://api.dicebear.com/7.x/avataaars/svg?seed=Max&backgroundColor=d1d4f9",
+  "https://api.dicebear.com/7.x/avataaars/svg?seed=Lola&backgroundColor=ffb8b8",
+  "https://api.dicebear.com/7.x/avataaars/svg?seed=Leo&backgroundColor=b6e3f4"
+];
+
+export default function ProfileSetup() {
+  const { data: session, update } = useSession();
+  const router = useRouter();
+  const isEnglish = useSearchParams().get("lang") === "en";
+  const [username, setUsername] = useState("");
+  const [selectedAvatar, setSelectedAvatar] = useState(AVATARS[0]);
+  const [loading, setLoading] = useState(false);
+
+  const handleSave = async () => {
+    setLoading(true);
+    // API pour mettre à jour le profil dans MongoDB
+    const res = await fetch("/api/user/update-profile", {
+      method: "POST",
+      body: JSON.stringify({ username, image: selectedAvatar }),
+    });
+
+    if (res.ok) {
+      await update({ image: selectedAvatar, username }); // Met à jour la session locale
+      router.push(isEnglish ? "/?lang=en" : "/");
+    }
+    setLoading(false);
+  };
+
+  return (
+    <main className="min-h-screen bg-deepBlack flex items-center justify-center pt-20">
+      <div className="glass-panel p-10 rounded-[32px] max-w-md w-full text-center border border-white/10 shadow-2xl">
+        <h1 className="text-3xl font-black text-white mb-2">{isEnglish ? "Welcome!" : "Bienvenue !"}</h1>
+        <p className="text-textGray mb-8">{isEnglish ? "Personalize your universe" : "Personnalisez votre univers"}</p>
+
+        <div className="flex gap-3 justify-center mb-8 flex-wrap">
+          {AVATARS.map((av, i) => (
+            <button key={i} onClick={() => setSelectedAvatar(av)} className={`relative w-16 h-16 rounded-full overflow-hidden border-4 transition-all ${selectedAvatar === av ? 'border-signaturePurple scale-110 glow-purple' : 'border-transparent opacity-50'}`}>
+              <Image src={av} alt="avatar" fill unoptimized />
+            </button>
+          ))}
+        </div>
+
+        <input 
+          type="text" 
+          placeholder={isEnglish ? "Your Username" : "Votre pseudo"}
+          value={username}
+          onChange={(e) => setUsername(e.target.value)}
+          className="w-full bg-uiGray border border-white/10 rounded-xl px-4 py-3 text-white mb-6 focus:border-signaturePurple outline-none"
+        />
+
+        <button 
+          onClick={handleSave}
+          disabled={loading || !username}
+          className="w-full py-4 bg-signaturePurple text-white font-bold rounded-xl glow-purple disabled:opacity-50"
+        >
+          {loading ? "..." : (isEnglish ? "Start Exploring" : "Commencer l'exploration")}
+        </button>
+      </div>
+    </main>
+  );
+}

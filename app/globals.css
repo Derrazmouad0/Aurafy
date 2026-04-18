@@ -1,0 +1,43 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer utilities {
+  /* Effet Glassmorphism élégant demandé dans le cahier des charges */
+  .glass-panel {
+    @apply bg-glass-gradient backdrop-blur-xl border border-white/5 shadow-[0_8px_32px_0_rgba(0,0,0,0.37)];
+  }
+  
+  /* Effets Glow subtils */
+  .glow-purple {
+    @apply shadow-[0_0_25px_rgba(123,97,255,0.3)];
+  }
+  .glow-pink {
+    @apply shadow-[0_0_25px_rgba(255,77,166,0.3)];
+  }
+  .glow-blue {
+    @apply shadow-[0_0_25px_rgba(77,163,255,0.3)];
+  }
+}
+
+body {
+  background-color: #0B0B0F; /* Le noir profond du cahier des charges */
+  color: #FFFFFF;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* Scrollbar personnalisée sombre */
+::-webkit-scrollbar {
+  width: 8px;
+}
+::-webkit-scrollbar-track {
+  background: #0B0B0F;
+}
+::-webkit-scrollbar-thumb {
+  background: #1C1C24;
+  border-radius: 4px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: #7B61FF;
+}

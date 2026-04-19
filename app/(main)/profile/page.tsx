@@ -1,13 +1,11 @@
 "use client";
 
-import dynamic from "next/dynamic";
-import { useEffect } from "react";
+import { Suspense, useEffect, useState } from "react";
 import { useSession, signOut } from "next-auth/react";
 import { useSearchParams, useRouter } from "next/navigation";
 import Image from "next/image";
 import Link from "next/link";
 
-// 1. On crée le composant normalement
 function ProfileContent() {
   const { data: session, status } = useSession();
   const searchParams = useSearchParams();
@@ -104,5 +102,21 @@ function ProfileContent() {
   );
 }
 
-// 2. LA SOLUTION ULTIME : SSR = false
-export default dynamic(() => Promise.resolve(ProfileContent), { ssr: false });
+// Composant principal parfaitement propre et standardisé
+export default function ProfilePage() {
+  const [isMounted, setIsMounted] = useState(false);
+  
+  useEffect(() => {
+    setIsMounted(true);
+  }, []);
+
+  if (!isMounted) {
+    return <div className="min-h-screen bg-deepBlack" />;
+  }
+
+  return (
+    <Suspense fallback={<div className="min-h-screen bg-deepBlack" />}>
+      <ProfileContent />
+    </Suspense>
+  );
+}

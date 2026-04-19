@@ -1,7 +1,6 @@
 "use client";
 
-import dynamic from "next/dynamic";
-import { useState } from "react";
+import { Suspense, useState, useEffect } from "react";
 import { useSession } from "next-auth/react";
 import { useRouter, useSearchParams } from "next/navigation";
 import Image from "next/image";
@@ -15,7 +14,6 @@ const AVATARS = [
   "https://api.dicebear.com/7.x/avataaars/svg?seed=Leo&backgroundColor=b6e3f4"
 ];
 
-// 1. On crée le composant normalement, sans l'exporter par défaut
 function SetupContent() {
   const { data: session, update } = useSession();
   const router = useRouter();
@@ -74,5 +72,21 @@ function SetupContent() {
   );
 }
 
-// 2. LA SOLUTION ULTIME : On exporte avec ssr: false pour bloquer Vercel
-export default dynamic(() => Promise.resolve(SetupContent), { ssr: false });
+// Composant principal parfaitement propre et standardisé
+export default function ProfileSetup() {
+  const [isMounted, setIsMounted] = useState(false);
+  
+  useEffect(() => {
+    setIsMounted(true);
+  }, []);
+
+  if (!isMounted) {
+    return <div className="min-h-screen bg-deepBlack" />;
+  }
+
+  return (
+    <Suspense fallback={<div className="min-h-screen bg-deepBlack" />}>
+      <SetupContent />
+    </Suspense>
+  );
+}

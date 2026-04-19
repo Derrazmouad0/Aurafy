@@ -1,22 +1,30 @@
 "use client";
 
-import { Suspense, useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import { useSession, signOut } from "next-auth/react";
-import { useSearchParams, useRouter } from "next/navigation";
+import { useRouter } from "next/navigation";
 import Image from "next/image";
 import Link from "next/link";
 
-function ProfileContent() {
+export default function ProfilePage() {
   const { data: session, status } = useSession();
-  const searchParams = useSearchParams();
   const router = useRouter();
-  const isEnglish = searchParams ? searchParams.get("lang") === "en" : false;
+
+  const [isMounted, setIsMounted] = useState(false);
+  const [isEnglish, setIsEnglish] = useState(false);
+
+  // On lit l'URL manuellement sans déclencher Next.js
+  useEffect(() => {
+    setIsMounted(true);
+    const params = new URLSearchParams(window.location.search);
+    setIsEnglish(params.get("lang") === "en");
+  }, []);
 
   useEffect(() => {
-    if (status === "unauthenticated") {
+    if (isMounted && status === "unauthenticated") {
       router.push(isEnglish ? "/?lang=en" : "/");
     }
-  }, [status, router, isEnglish]);
+  }, [status, router, isEnglish, isMounted]);
 
   const handleDeleteAccount = async () => {
     const confirmMessage = isEnglish 
@@ -31,7 +39,7 @@ function ProfileContent() {
     }
   };
 
-  if (status === "loading") {
+  if (!isMounted || status === "loading") {
     return (
       <div className="min-h-screen flex items-center justify-center bg-deepBlack">
         <div className="w-10 h-10 border-4 border-signaturePurple border-t-transparent rounded-full animate-spin"></div>
@@ -99,24 +107,5 @@ function ProfileContent() {
         </div>
       </div>
     </main>
-  );
-}
-
-// Composant principal parfaitement propre et standardisé
-export default function ProfilePage() {
-  const [isMounted, setIsMounted] = useState(false);
-  
-  useEffect(() => {
-    setIsMounted(true);
-  }, []);
-
-  if (!isMounted) {
-    return <div className="min-h-screen bg-deepBlack" />;
-  }
-
-  return (
-    <Suspense fallback={<div className="min-h-screen bg-deepBlack" />}>
-      <ProfileContent />
-    </Suspense>
   );
 }

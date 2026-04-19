@@ -1,8 +1,8 @@
 "use client";
 
-import { Suspense, useState, useEffect } from "react";
+import { useState, useEffect } from "react";
 import { useSession } from "next-auth/react";
-import { useRouter, useSearchParams } from "next/navigation";
+import { useRouter } from "next/navigation";
 import Image from "next/image";
 
 const AVATARS = [
@@ -14,15 +14,24 @@ const AVATARS = [
   "https://api.dicebear.com/7.x/avataaars/svg?seed=Leo&backgroundColor=b6e3f4"
 ];
 
-function SetupContent() {
+export default function ProfileSetup() {
   const { data: session, update } = useSession();
   const router = useRouter();
-  const searchParams = useSearchParams();
-  const isEnglish = searchParams ? searchParams.get("lang") === "en" : false;
+  
+  // Nouveaux états locaux
+  const [isMounted, setIsMounted] = useState(false);
+  const [isEnglish, setIsEnglish] = useState(false);
   
   const [username, setUsername] = useState("");
   const [selectedAvatar, setSelectedAvatar] = useState(AVATARS[0]);
   const [loading, setLoading] = useState(false);
+
+  // On attend que la page soit sur le navigateur pour lire l'URL
+  useEffect(() => {
+    setIsMounted(true);
+    const params = new URLSearchParams(window.location.search);
+    setIsEnglish(params.get("lang") === "en");
+  }, []);
 
   const handleSave = async () => {
     setLoading(true);
@@ -37,6 +46,9 @@ function SetupContent() {
     }
     setLoading(false);
   };
+
+  // Vercel ne verra que ça pendant la compilation : un écran noir !
+  if (!isMounted) return <div className="min-h-screen bg-deepBlack" />;
 
   return (
     <main className="min-h-screen bg-deepBlack flex items-center justify-center pt-20">
@@ -69,24 +81,5 @@ function SetupContent() {
         </button>
       </div>
     </main>
-  );
-}
-
-// Composant principal parfaitement propre et standardisé
-export default function ProfileSetup() {
-  const [isMounted, setIsMounted] = useState(false);
-  
-  useEffect(() => {
-    setIsMounted(true);
-  }, []);
-
-  if (!isMounted) {
-    return <div className="min-h-screen bg-deepBlack" />;
-  }
-
-  return (
-    <Suspense fallback={<div className="min-h-screen bg-deepBlack" />}>
-      <SetupContent />
-    </Suspense>
   );
 }

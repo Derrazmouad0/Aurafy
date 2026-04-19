@@ -24,7 +24,7 @@ const handler = NextAuth({
         }
         
         await connectToDatabase();
-        const user = await User.findOne({ email: credentials.email });
+        const user = await (User as any).findOne({ email: credentials.email });
         
         if (!user || !user.password) {
           throw new Error("Email ou mot de passe incorrect");

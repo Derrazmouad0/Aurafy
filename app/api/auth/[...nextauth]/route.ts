@@ -43,27 +43,29 @@ const handler = NextAuth({
     async signIn({ user, account }) {
       if (account?.provider === "google") {
         await connectToDatabase();
-        const existingUser = await User.findOne({ email: user.email });
+        // On utilise 'user' (minuscule) pour récupérer l'email de la personne
+        const existingUser = await (User as any).findOne({ email: user.email });
         
         // Si c'est la première connexion Google, on crée le compte dans MongoDB
         if (!existingUser) {
-          const newUser = new User({
+          // On utilise (User as any).create pour apaiser TypeScript
+          await (User as any).create({
             name: user.name,
             username: user.email?.split('@')[0], 
             email: user.email,
             image: user.image,
             provider: "google"
           });
-          await newUser.save();
         }
       }
       return true;
     },
     async jwt({ token, user, trigger, session }) {
       if (user) {
+        // On utilise 'user' (minuscule) ici aussi !
         token.id = user.id;
         await connectToDatabase();
-        const dbUser = await User.findOne({ email: user.email });
+        const dbUser = await (User as any).findOne({ email: user.email });
         if (dbUser) {
           token.image = dbUser.image;
           token.username = dbUser.username;

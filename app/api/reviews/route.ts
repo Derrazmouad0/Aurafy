@@ -9,7 +9,8 @@ export async function GET(req: Request) {
   if (!mediaId) return NextResponse.json({ reviews: [] });
   
   await connectToDatabase();
-  const reviews = await Review.find({ mediaId: String(mediaId) }).sort({ createdAt: -1 });
+  // CORRECTION : On force TypeScript à accepter find
+  const reviews = await (Review as any).find({ mediaId: String(mediaId) }).sort({ createdAt: -1 });
   return NextResponse.json({ reviews });
 }
 
@@ -20,7 +21,8 @@ export async function POST(req: Request) {
   const { mediaId, rating, comment } = await req.json();
   await connectToDatabase();
   
-  const newReview = new Review({
+  // CORRECTION : On force TypeScript à accepter la création (new)
+  const newReview = new (Review as any)({
     userEmail: session.user.email,
     userName: session.user.name,
     userImage: session.user.image,

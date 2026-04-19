@@ -1,8 +1,8 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { Suspense, useState } from "react";
 import { useSession } from "next-auth/react";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import Image from "next/image";
 
 const AVATARS = [
@@ -14,21 +14,15 @@ const AVATARS = [
   "https://api.dicebear.com/7.x/avataaars/svg?seed=Leo&backgroundColor=b6e3f4"
 ];
 
-// COMPOSANT ENFANT : Caché aux yeux de Vercel pendant l'installation
-function SetupForm() {
+function SetupContent() {
   const { data: session, update } = useSession();
   const router = useRouter();
-
-  const [isEnglish, setIsEnglish] = useState(false);
+  const searchParams = useSearchParams();
+  const isEnglish = searchParams?.get("lang") === "en";
+  
   const [username, setUsername] = useState("");
   const [selectedAvatar, setSelectedAvatar] = useState(AVATARS[0]);
   const [loading, setLoading] = useState(false);
-
-  // On lit l'URL manuellement et en toute sécurité
-  useEffect(() => {
-    const params = new URLSearchParams(window.location.search);
-    setIsEnglish(params.get("lang") === "en");
-  }, []);
 
   const handleSave = async () => {
     setLoading(true);
@@ -78,16 +72,10 @@ function SetupForm() {
   );
 }
 
-// COMPOSANT PARENT : Celui que Vercel voit
 export default function ProfileSetup() {
-  const [isMounted, setIsMounted] = useState(false);
-  
-  useEffect(() => {
-    setIsMounted(true);
-  }, []);
-
-  // Vercel ne lira QUE cette ligne et ignorera tout le reste du fichier !
-  if (!isMounted) return <div className="min-h-screen bg-deepBlack" />;
-
-  return <SetupForm />;
+  return (
+    <Suspense fallback={<div className="min-h-screen bg-deepBlack flex items-center justify-center"><div className="w-10 h-10 border-4 border-signaturePurple border-t-transparent rounded-full animate-spin"></div></div>}>
+      <SetupContent />
+    </Suspense>
+  );
 }

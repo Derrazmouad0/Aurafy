@@ -1,22 +1,16 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { Suspense, useEffect } from "react";
 import { useSession, signOut } from "next-auth/react";
-import { useRouter } from "next/navigation";
+import { useSearchParams, useRouter } from "next/navigation";
 import Image from "next/image";
 import Link from "next/link";
 
-// COMPOSANT ENFANT : Caché aux yeux de Vercel pendant l'installation
-function ProfileDetails() {
+function ProfileContent() {
   const { data: session, status } = useSession();
+  const searchParams = useSearchParams();
   const router = useRouter();
-  
-  const [isEnglish, setIsEnglish] = useState(false);
-
-  useEffect(() => {
-    const params = new URLSearchParams(window.location.search);
-    setIsEnglish(params.get("lang") === "en");
-  }, []);
+  const isEnglish = searchParams?.get("lang") === "en";
 
   useEffect(() => {
     if (status === "unauthenticated") {
@@ -37,13 +31,15 @@ function ProfileDetails() {
     }
   };
 
-  if (status === "loading" || !session?.user) {
+  if (status === "loading") {
     return (
       <div className="min-h-screen flex items-center justify-center bg-deepBlack">
         <div className="w-10 h-10 border-4 border-signaturePurple border-t-transparent rounded-full animate-spin"></div>
       </div>
     );
   }
+
+  if (!session?.user) return null;
 
   return (
     <main className="min-h-screen bg-deepBlack pt-32 pb-24 text-white">
@@ -106,16 +102,10 @@ function ProfileDetails() {
   );
 }
 
-// COMPOSANT PARENT : Celui que Vercel voit
 export default function ProfilePage() {
-  const [isMounted, setIsMounted] = useState(false);
-  
-  useEffect(() => {
-    setIsMounted(true);
-  }, []);
-
-  // Vercel ne lira QUE cette ligne et ignorera tout le reste du fichier !
-  if (!isMounted) return <div className="min-h-screen bg-deepBlack" />;
-
-  return <ProfileDetails />;
+  return (
+    <Suspense fallback={<div className="min-h-screen bg-deepBlack flex items-center justify-center"><div className="w-10 h-10 border-4 border-signaturePurple border-t-transparent rounded-full animate-spin"></div></div>}>
+      <ProfileContent />
+    </Suspense>
+  );
 }

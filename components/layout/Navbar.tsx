@@ -2,11 +2,11 @@
 
 import Link from "next/link";
 import { usePathname, useSearchParams, useRouter } from "next/navigation";
-import { useState, useEffect } from "react";
+import { useState, useEffect, Suspense } from "react";
 import { useSession, signOut } from "next-auth/react";
 import Image from "next/image";
 
-export default function Navbar() {
+function NavbarContent() {
   const { data: session } = useSession();
   const [isScrolled, setIsScrolled] = useState(false);
   const [showMenu, setShowMenu] = useState(false);
@@ -14,7 +14,7 @@ export default function Navbar() {
   const searchParams = useSearchParams();
   const router = useRouter();
   
-  const isEnglish = searchParams.get("lang") === "en";
+  const isEnglish = searchParams?.get("lang") === "en";
 
   useEffect(() => {
     const handleScroll = () => setIsScrolled(window.scrollY > 50);
@@ -23,7 +23,7 @@ export default function Navbar() {
   }, []);
 
   const toggleLanguage = () => {
-    const params = new URLSearchParams(searchParams.toString());
+    const params = new URLSearchParams(searchParams?.toString() || "");
     isEnglish ? params.delete("lang") : params.set("lang", "en");
     router.push(`${pathname}?${params.toString()}`);
   };
@@ -91,5 +91,13 @@ export default function Navbar() {
         </div>
       </div>
     </nav>
+  );
+}
+
+export default function Navbar() {
+  return (
+    <Suspense fallback={<nav className="fixed top-0 w-full z-[100] bg-transparent py-6" />}>
+      <NavbarContent />
+    </Suspense>
   );
 }

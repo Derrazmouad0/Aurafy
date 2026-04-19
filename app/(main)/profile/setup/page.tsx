@@ -1,5 +1,7 @@
 "use client";
 
+export const dynamic = "force-dynamic";
+
 import { useState } from "react";
 import { useSession } from "next-auth/react";
 import { useRouter, useSearchParams } from "next/navigation";
@@ -17,7 +19,8 @@ const AVATARS = [
 export default function ProfileSetup() {
   const { data: session, update } = useSession();
   const router = useRouter();
-  const isEnglish = useSearchParams().get("lang") === "en";
+  const searchParams = useSearchParams();
+  const isEnglish = searchParams ? searchParams.get("lang") === "en" : false;
   const [username, setUsername] = useState("");
   const [selectedAvatar, setSelectedAvatar] = useState(AVATARS[0]);
   const [loading, setLoading] = useState(false);

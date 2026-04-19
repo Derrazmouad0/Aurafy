@@ -1,5 +1,7 @@
 "use client";
 
+export const dynamic = "force-dynamic";
+
 import { useSession, signOut } from "next-auth/react";
 import { useSearchParams, useRouter } from "next/navigation";
 import Image from "next/image";
@@ -10,7 +12,7 @@ export default function ProfilePage() {
   const { data: session, status } = useSession();
   const searchParams = useSearchParams();
   const router = useRouter();
-  const isEnglish = searchParams.get("lang") === "en";
+  const isEnglish = searchParams ? searchParams.get("lang") === "en" : false;
 
   useEffect(() => {
     if (status === "unauthenticated") {

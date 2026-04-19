@@ -14,15 +14,16 @@ export async function POST(req: Request) {
 
     await connectToDatabase();
     
-    // PLUS D'ERREUR ICI : TypeScript sait maintenant que User a la méthode findOne
-    const existingUser = await User.findOne({ $or: [{ email }, { username }] });
+    // CORRECTION : On force TypeScript à accepter findOne
+    const existingUser = await (User as any).findOne({ $or: [{ email }, { username }] });
     if (existingUser) {
       return NextResponse.json({ error: "Cet email ou nom d'utilisateur est déjà pris." }, { status: 400 });
     }
 
     const hashedPassword = await bcrypt.hash(password, 10);
     
-    const newUser = new User({
+    // CORRECTION : On force TypeScript à accepter la création (new)
+    const newUser = new (User as any)({
       name,
       username,
       email,

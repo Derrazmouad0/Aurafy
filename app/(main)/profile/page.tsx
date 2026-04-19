@@ -1,25 +1,30 @@
 "use client";
 
-import { Suspense, useEffect } from "react";
+// Attention : Ici aussi, on retire le export const dynamic !
+
+import { Suspense, useEffect, useState } from "react";
 import { useSession, signOut } from "next-auth/react";
 import { useSearchParams, useRouter } from "next/navigation";
 import Image from "next/image";
 import Link from "next/link";
 
-// 1. On sépare le contenu qui utilise useSearchParams
 function ProfileContent() {
   const { data: session, status } = useSession();
   const searchParams = useSearchParams();
   const router = useRouter();
-  
-  // Correction sécurisée pour le paramètre de langue
   const isEnglish = searchParams ? searchParams.get("lang") === "en" : false;
+  
+  // LE BOUCLIER ANTI-VERCEL
+  const [isMounted, setIsMounted] = useState(false);
+  useEffect(() => {
+    setIsMounted(true);
+  }, []);
 
   useEffect(() => {
-    if (status === "unauthenticated") {
+    if (isMounted && status === "unauthenticated") {
       router.push(isEnglish ? "/?lang=en" : "/");
     }
-  }, [status, router, isEnglish]);
+  }, [status, router, isEnglish, isMounted]);
 
   const handleDeleteAccount = async () => {
     const confirmMessage = isEnglish 
@@ -34,7 +39,8 @@ function ProfileContent() {
     }
   };
 
-  if (status === "loading") {
+  // Si on est sur Vercel, on coupe court à la compilation
+  if (!isMounted || status === "loading") {
     return (
       <div className="min-h-screen flex items-center justify-center bg-deepBlack">
         <div className="w-10 h-10 border-4 border-signaturePurple border-t-transparent rounded-full animate-spin"></div>
@@ -66,7 +72,6 @@ function ProfileContent() {
             {session.user.name}
           </h1>
           
-          {/* Correction du typage TypeScript pour username */}
           <p className="text-signaturePurple font-bold text-lg mb-2 z-10">
             @{(session.user as any)?.username || "utilisateur"}
           </p>
@@ -106,14 +111,9 @@ function ProfileContent() {
   );
 }
 
-// 2. Composant principal qui enveloppe tout avec Suspense
 export default function ProfilePage() {
   return (
-    <Suspense fallback={
-      <div className="min-h-screen flex items-center justify-center bg-deepBlack">
-        <div className="w-10 h-10 border-4 border-signaturePurple border-t-transparent rounded-full animate-spin"></div>
-      </div>
-    }>
+    <Suspense fallback={null}>
       <ProfileContent />
     </Suspense>
   );

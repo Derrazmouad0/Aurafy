@@ -1,30 +1,28 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useState, useEffect } from "react";
 import { useSession, signOut } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import Image from "next/image";
 import Link from "next/link";
 
-export default function ProfilePage() {
+// COMPOSANT ENFANT : Caché aux yeux de Vercel pendant l'installation
+function ProfileDetails() {
   const { data: session, status } = useSession();
   const router = useRouter();
-
-  const [isMounted, setIsMounted] = useState(false);
+  
   const [isEnglish, setIsEnglish] = useState(false);
 
-  // On lit l'URL manuellement sans déclencher Next.js
   useEffect(() => {
-    setIsMounted(true);
     const params = new URLSearchParams(window.location.search);
     setIsEnglish(params.get("lang") === "en");
   }, []);
 
   useEffect(() => {
-    if (isMounted && status === "unauthenticated") {
+    if (status === "unauthenticated") {
       router.push(isEnglish ? "/?lang=en" : "/");
     }
-  }, [status, router, isEnglish, isMounted]);
+  }, [status, router, isEnglish]);
 
   const handleDeleteAccount = async () => {
     const confirmMessage = isEnglish 
@@ -39,15 +37,13 @@ export default function ProfilePage() {
     }
   };
 
-  if (!isMounted || status === "loading") {
+  if (status === "loading" || !session?.user) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-deepBlack">
         <div className="w-10 h-10 border-4 border-signaturePurple border-t-transparent rounded-full animate-spin"></div>
       </div>
     );
   }
-
-  if (!session?.user) return null;
 
   return (
     <main className="min-h-screen bg-deepBlack pt-32 pb-24 text-white">
@@ -108,4 +104,18 @@ export default function ProfilePage() {
       </div>
     </main>
   );
+}
+
+// COMPOSANT PARENT : Celui que Vercel voit
+export default function ProfilePage() {
+  const [isMounted, setIsMounted] = useState(false);
+  
+  useEffect(() => {
+    setIsMounted(true);
+  }, []);
+
+  // Vercel ne lira QUE cette ligne et ignorera tout le reste du fichier !
+  if (!isMounted) return <div className="min-h-screen bg-deepBlack" />;
+
+  return <ProfileDetails />;
 }

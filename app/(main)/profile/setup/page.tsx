@@ -14,21 +14,18 @@ const AVATARS = [
   "https://api.dicebear.com/7.x/avataaars/svg?seed=Leo&backgroundColor=b6e3f4"
 ];
 
-export default function ProfileSetup() {
+// COMPOSANT ENFANT : Caché aux yeux de Vercel pendant l'installation
+function SetupForm() {
   const { data: session, update } = useSession();
   const router = useRouter();
-  
-  // Nouveaux états locaux
-  const [isMounted, setIsMounted] = useState(false);
+
   const [isEnglish, setIsEnglish] = useState(false);
-  
   const [username, setUsername] = useState("");
   const [selectedAvatar, setSelectedAvatar] = useState(AVATARS[0]);
   const [loading, setLoading] = useState(false);
 
-  // On attend que la page soit sur le navigateur pour lire l'URL
+  // On lit l'URL manuellement et en toute sécurité
   useEffect(() => {
-    setIsMounted(true);
     const params = new URLSearchParams(window.location.search);
     setIsEnglish(params.get("lang") === "en");
   }, []);
@@ -46,9 +43,6 @@ export default function ProfileSetup() {
     }
     setLoading(false);
   };
-
-  // Vercel ne verra que ça pendant la compilation : un écran noir !
-  if (!isMounted) return <div className="min-h-screen bg-deepBlack" />;
 
   return (
     <main className="min-h-screen bg-deepBlack flex items-center justify-center pt-20">
@@ -82,4 +76,18 @@ export default function ProfileSetup() {
       </div>
     </main>
   );
+}
+
+// COMPOSANT PARENT : Celui que Vercel voit
+export default function ProfileSetup() {
+  const [isMounted, setIsMounted] = useState(false);
+  
+  useEffect(() => {
+    setIsMounted(true);
+  }, []);
+
+  // Vercel ne lira QUE cette ligne et ignorera tout le reste du fichier !
+  if (!isMounted) return <div className="min-h-screen bg-deepBlack" />;
+
+  return <SetupForm />;
 }

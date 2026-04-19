@@ -1,17 +1,18 @@
 "use client";
 
-export const dynamic = "force-dynamic";
-
+import { Suspense, useEffect } from "react";
 import { useSession, signOut } from "next-auth/react";
 import { useSearchParams, useRouter } from "next/navigation";
 import Image from "next/image";
 import Link from "next/link";
-import { useEffect } from "react";
 
-export default function ProfilePage() {
+// 1. On sépare le contenu qui utilise useSearchParams
+function ProfileContent() {
   const { data: session, status } = useSession();
   const searchParams = useSearchParams();
   const router = useRouter();
+  
+  // Correction sécurisée pour le paramètre de langue
   const isEnglish = searchParams ? searchParams.get("lang") === "en" : false;
 
   useEffect(() => {
@@ -65,6 +66,7 @@ export default function ProfilePage() {
             {session.user.name}
           </h1>
           
+          {/* Correction du typage TypeScript pour username */}
           <p className="text-signaturePurple font-bold text-lg mb-2 z-10">
             @{(session.user as any)?.username || "utilisateur"}
           </p>
@@ -101,5 +103,18 @@ export default function ProfilePage() {
         </div>
       </div>
     </main>
+  );
+}
+
+// 2. Composant principal qui enveloppe tout avec Suspense
+export default function ProfilePage() {
+  return (
+    <Suspense fallback={
+      <div className="min-h-screen flex items-center justify-center bg-deepBlack">
+        <div className="w-10 h-10 border-4 border-signaturePurple border-t-transparent rounded-full animate-spin"></div>
+      </div>
+    }>
+      <ProfileContent />
+    </Suspense>
   );
 }

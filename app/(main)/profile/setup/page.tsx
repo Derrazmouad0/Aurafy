@@ -1,8 +1,6 @@
 "use client";
 
-export const dynamic = "force-dynamic";
-
-import { useState } from "react";
+import { Suspense, useState } from "react";
 import { useSession } from "next-auth/react";
 import { useRouter, useSearchParams } from "next/navigation";
 import Image from "next/image";
@@ -16,7 +14,8 @@ const AVATARS = [
   "https://api.dicebear.com/7.x/avataaars/svg?seed=Leo&backgroundColor=b6e3f4"
 ];
 
-export default function ProfileSetup() {
+// 1. On crée le contenu de la page dans un composant séparé
+function SetupContent() {
   const { data: session, update } = useSession();
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -27,14 +26,13 @@ export default function ProfileSetup() {
 
   const handleSave = async () => {
     setLoading(true);
-    // API pour mettre à jour le profil dans MongoDB
     const res = await fetch("/api/user/update-profile", {
       method: "POST",
       body: JSON.stringify({ username, image: selectedAvatar }),
     });
 
     if (res.ok) {
-      await update({ image: selectedAvatar, username }); // Met à jour la session locale
+      await update({ image: selectedAvatar, username }); 
       router.push(isEnglish ? "/?lang=en" : "/");
     }
     setLoading(false);
@@ -71,5 +69,18 @@ export default function ProfileSetup() {
         </button>
       </div>
     </main>
+  );
+}
+
+// 2. On exporte la page principale en enveloppant le contenu avec <Suspense>
+export default function ProfileSetup() {
+  return (
+    <Suspense fallback={
+      <div className="min-h-screen flex items-center justify-center bg-deepBlack">
+        <div className="w-10 h-10 border-4 border-signaturePurple border-t-transparent rounded-full animate-spin"></div>
+      </div>
+    }>
+      <SetupContent />
+    </Suspense>
   );
 }

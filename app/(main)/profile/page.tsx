@@ -64,7 +64,7 @@ export default function ProfilePage() {
           </h1>
           
           <p className="text-signaturePurple font-bold text-lg mb-2 z-10">
-            @{session.user.username || "utilisateur"}
+            @{(session.user as any)?.username || "utilisateur"}
           </p>
           
           <p className="text-textGray mb-10 z-10 bg-white/5 px-4 py-1.5 rounded-full border border-white/10">

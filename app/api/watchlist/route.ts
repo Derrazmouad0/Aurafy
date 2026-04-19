@@ -13,7 +13,7 @@ export async function GET() {
     }
 
     await connectToDatabase();
-    const user = await User.findOne({ email: session.user.email });
+    const user = await (User as any).findOne({ email: session.user.email });
 
     if (!user) {
       return NextResponse.json({ error: "Utilisateur non trouvé" }, { status: 404 });
@@ -41,7 +41,7 @@ export async function POST(req: Request) {
     }
 
     await connectToDatabase();
-    const user = await User.findOne({ email: session.user.email });
+    const user = await (User as any).findOne({ email: session.user.email });
 
     if (!user) {
       return NextResponse.json({ error: "Utilisateur non trouvé" }, { status: 404 });

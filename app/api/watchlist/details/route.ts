@@ -14,7 +14,7 @@ export async function GET(req: Request) {
   const lang = searchParams.get("lang") === "en" ? "en-US" : "fr-FR";
 
   await connectToDatabase();
-  const user = await User.findOne({ email: session.user.email });
+  const user = await (User as any).findOne({ email: session.user.email });
   
   if (!user || !user.watchlist || user.watchlist.length === 0) {
     return NextResponse.json({ movies: [] });
@@ -46,7 +46,7 @@ export async function GET(req: Request) {
 
     const results = await Promise.all(moviePromises);
     // On enlève les null (au cas où un film aurait été supprimé par TMDB)
-    const filteredResults = results.filter(m => m !== null);
+    const filteredResults = results.filter((m: any) => m !== null);
 
     return NextResponse.json({ movies: filteredResults });
   } catch (error) {

@@ -69,7 +69,7 @@ export default function Navbar() {
                 <div className="absolute right-0 mt-4 w-48 bg-uiGray border border-white/10 rounded-2xl shadow-2xl py-2 animate-fade-in backdrop-blur-xl">
                   <div className="px-4 py-2 border-b border-white/5 mb-2">
                     <p className="text-white font-bold text-sm truncate">{session.user?.name}</p>
-                    <p className="text-textGray text-[10px] truncate">@{session.user?.username || 'user'}</p>
+                    <p className="text-textGray text-[10px] truncate">@{(session.user as any)?.username || 'user'}</p>
                   </div>
                   <Link href={`/profile${langQuery}`} className="block px-4 py-2 text-sm text-textGray hover:text-white hover:bg-white/5 transition-colors">
                     {isEnglish ? 'My Profile' : 'Mon Profil'}

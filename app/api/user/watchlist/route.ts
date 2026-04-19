@@ -9,7 +9,7 @@ export async function GET() {
   if (!session?.user?.email) return NextResponse.json({ watchlist: [] });
   
   await connectToDatabase();
-  const user = await User.findOne({ email: session.user.email });
+  const user = await (User as any).findOne({ email: session.user.email });
   return NextResponse.json({ watchlist: user?.watchlist || [] });
 }
 
@@ -21,7 +21,7 @@ export async function POST(req: Request) {
   const { mediaId } = await req.json();
   await connectToDatabase();
   
-  const user = await User.findOne({ email: session.user.email });
+  const user = await (User as any).findOne({ email: session.user.email });
   const inWatchlist = user.watchlist.includes(String(mediaId));
 
   if (inWatchlist) {

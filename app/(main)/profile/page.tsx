@@ -1,30 +1,24 @@
 "use client";
 
-// Attention : Ici aussi, on retire le export const dynamic !
-
-import { Suspense, useEffect, useState } from "react";
+import dynamic from "next/dynamic";
+import { useEffect } from "react";
 import { useSession, signOut } from "next-auth/react";
 import { useSearchParams, useRouter } from "next/navigation";
 import Image from "next/image";
 import Link from "next/link";
 
+// 1. On crée le composant normalement
 function ProfileContent() {
   const { data: session, status } = useSession();
   const searchParams = useSearchParams();
   const router = useRouter();
   const isEnglish = searchParams ? searchParams.get("lang") === "en" : false;
-  
-  // LE BOUCLIER ANTI-VERCEL
-  const [isMounted, setIsMounted] = useState(false);
-  useEffect(() => {
-    setIsMounted(true);
-  }, []);
 
   useEffect(() => {
-    if (isMounted && status === "unauthenticated") {
+    if (status === "unauthenticated") {
       router.push(isEnglish ? "/?lang=en" : "/");
     }
-  }, [status, router, isEnglish, isMounted]);
+  }, [status, router, isEnglish]);
 
   const handleDeleteAccount = async () => {
     const confirmMessage = isEnglish 
@@ -39,8 +33,7 @@ function ProfileContent() {
     }
   };
 
-  // Si on est sur Vercel, on coupe court à la compilation
-  if (!isMounted || status === "loading") {
+  if (status === "loading") {
     return (
       <div className="min-h-screen flex items-center justify-center bg-deepBlack">
         <div className="w-10 h-10 border-4 border-signaturePurple border-t-transparent rounded-full animate-spin"></div>
@@ -111,10 +104,5 @@ function ProfileContent() {
   );
 }
 
-export default function ProfilePage() {
-  return (
-    <Suspense fallback={null}>
-      <ProfileContent />
-    </Suspense>
-  );
-}
+// 2. LA SOLUTION ULTIME : SSR = false
+export default dynamic(() => Promise.resolve(ProfileContent), { ssr: false });

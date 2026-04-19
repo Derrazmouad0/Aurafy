@@ -1,8 +1,7 @@
 "use client";
 
-// Attention : On a bien retiré la ligne "export const dynamic" !
-
-import { Suspense, useState, useEffect } from "react";
+import dynamic from "next/dynamic";
+import { useState } from "react";
 import { useSession } from "next-auth/react";
 import { useRouter, useSearchParams } from "next/navigation";
 import Image from "next/image";
@@ -16,6 +15,7 @@ const AVATARS = [
   "https://api.dicebear.com/7.x/avataaars/svg?seed=Leo&backgroundColor=b6e3f4"
 ];
 
+// 1. On crée le composant normalement, sans l'exporter par défaut
 function SetupContent() {
   const { data: session, update } = useSession();
   const router = useRouter();
@@ -25,12 +25,6 @@ function SetupContent() {
   const [username, setUsername] = useState("");
   const [selectedAvatar, setSelectedAvatar] = useState(AVATARS[0]);
   const [loading, setLoading] = useState(false);
-  
-  // LE BOUCLIER ANTI-VERCEL
-  const [isMounted, setIsMounted] = useState(false);
-  useEffect(() => {
-    setIsMounted(true);
-  }, []);
 
   const handleSave = async () => {
     setLoading(true);
@@ -45,15 +39,6 @@ function SetupContent() {
     }
     setLoading(false);
   };
-
-  // Si on est sur le serveur de Vercel pendant l'installation, on ne renvoie rien !
-  if (!isMounted) {
-    return (
-      <div className="min-h-screen bg-deepBlack flex items-center justify-center">
-         <div className="w-10 h-10 border-4 border-signaturePurple border-t-transparent rounded-full animate-spin"></div>
-      </div>
-    );
-  }
 
   return (
     <main className="min-h-screen bg-deepBlack flex items-center justify-center pt-20">
@@ -89,10 +74,5 @@ function SetupContent() {
   );
 }
 
-export default function ProfileSetup() {
-  return (
-    <Suspense fallback={null}>
-      <SetupContent />
-    </Suspense>
-  );
-}
+// 2. LA SOLUTION ULTIME : On exporte avec ssr: false pour bloquer Vercel
+export default dynamic(() => Promise.resolve(SetupContent), { ssr: false });

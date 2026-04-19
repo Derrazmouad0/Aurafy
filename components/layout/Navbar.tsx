@@ -94,6 +94,7 @@ function NavbarContent() {
   );
 }
 
+// Le bouclier indispensable
 export default function Navbar() {
   return (
     <Suspense fallback={<nav className="fixed top-0 w-full z-[100] bg-transparent py-6" />}>

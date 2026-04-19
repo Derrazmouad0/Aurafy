@@ -6,7 +6,7 @@ import MovieCard from "../../../components/movies/MovieCard";
 
 function SearchContent() {
   const searchParams = useSearchParams();
-  const isEnglish = searchParams.get("lang") === "en";
+  const isEnglish = searchParams?.get("lang") === "en";
   const [query, setQuery] = useState("");
   const [results, setResults] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
@@ -55,5 +55,9 @@ function SearchContent() {
 }
 
 export default function SearchPage() {
-  return <Suspense fallback={<div>...</div>}><SearchContent /></Suspense>;
+  return (
+    <Suspense fallback={<div className="min-h-screen bg-deepBlack"></div>}>
+      <SearchContent />
+    </Suspense>
+  );
 }

@@ -1,19 +1,19 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, Suspense } from "react";
 import { useSession } from "next-auth/react";
 import { useSearchParams } from "next/navigation";
 import Image from "next/image";
 
-export default function ReviewSection({ mediaId }: { mediaId: string }) {
+function ReviewSectionContent({ mediaId }: { mediaId: string }) {
   const { data: session } = useSession();
-  const isEnglish = useSearchParams().get("lang") === "en";
+  const searchParams = useSearchParams();
+  const isEnglish = searchParams?.get("lang") === "en";
   const [reviews, setReviews] = useState<any[]>([]);
   const [comment, setComment] = useState("");
   const [rating, setRating] = useState(5);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  // Charger les commentaires au démarrage
   useEffect(() => {
     fetch(`/api/reviews?mediaId=${mediaId}`)
       .then(res => res.json())
@@ -32,7 +32,7 @@ export default function ReviewSection({ mediaId }: { mediaId: string }) {
     
     if (res.ok) {
       const newReview = await res.json();
-      setReviews([newReview, ...reviews]); // Ajoute le nouveau commentaire en haut
+      setReviews([newReview, ...reviews]);
       setComment("");
     }
     setIsSubmitting(false);
@@ -46,16 +46,9 @@ export default function ReviewSection({ mediaId }: { mediaId: string }) {
       </h2>
       
       <div className="space-y-6">
-        {/* Boîte de publication (Seulement si connecté) */}
         {session ? (
           <div className="glass-panel p-6 rounded-[24px] border border-white/5 shadow-lg bg-uiGray/50">
-            <textarea 
-              value={comment}
-              onChange={(e) => setComment(e.target.value)}
-              placeholder={isEnglish ? "Share your thoughts..." : "Partagez votre avis sur ce contenu..."}
-              className="w-full bg-deepBlack/80 border border-white/10 rounded-xl p-4 text-sm focus:outline-none focus:border-signaturePurple transition-colors"
-              rows={3}
-            />
+            <textarea value={comment} onChange={(e) => setComment(e.target.value)} placeholder={isEnglish ? "Share your thoughts..." : "Partagez votre avis sur ce contenu..."} className="w-full bg-deepBlack/80 border border-white/10 rounded-xl p-4 text-sm focus:outline-none focus:border-signaturePurple transition-colors" rows={3} />
             <div className="flex justify-between items-center mt-4">
               <div className="flex gap-2">
                 {[1, 2, 3, 4, 5].map(star => (
@@ -73,7 +66,6 @@ export default function ReviewSection({ mediaId }: { mediaId: string }) {
           </div>
         )}
         
-        {/* Liste des avis sauvegardés */}
         <div className="space-y-4">
           {reviews.length === 0 ? (
              <p className="text-textGray italic text-sm">{isEnglish ? "No reviews yet. Be the first!" : "Aucun avis pour l'instant. Soyez le premier !"}</p>
@@ -88,9 +80,7 @@ export default function ReviewSection({ mediaId }: { mediaId: string }) {
                     <p className="font-bold text-sm text-white">{rev.userName || "Utilisateur"}</p>
                     <span className="text-textGray text-xs">{new Date(rev.createdAt).toLocaleDateString()}</span>
                   </div>
-                  <div className="text-signaturePurple text-xs mb-2">
-                    {"★".repeat(rev.rating)}{"☆".repeat(5 - rev.rating)}
-                  </div>
+                  <div className="text-signaturePurple text-xs mb-2">{"★".repeat(rev.rating)}{"☆".repeat(5 - rev.rating)}</div>
                   <p className="text-textGray text-sm font-light leading-relaxed">{rev.comment}</p>
                 </div>
               </div>
@@ -99,5 +89,13 @@ export default function ReviewSection({ mediaId }: { mediaId: string }) {
         </div>
       </div>
     </section>
+  );
+}
+
+export default function ReviewSection(props: { mediaId: string }) {
+  return (
+    <Suspense fallback={null}>
+      <ReviewSectionContent {...props} />
+    </Suspense>
   );
 }

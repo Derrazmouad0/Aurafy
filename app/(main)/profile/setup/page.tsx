@@ -72,6 +72,7 @@ function SetupContent() {
   );
 }
 
+// Le bouclier indispensable
 export default function ProfileSetup() {
   return (
     <Suspense fallback={<div className="min-h-screen bg-deepBlack flex items-center justify-center"><div className="w-10 h-10 border-4 border-signaturePurple border-t-transparent rounded-full animate-spin"></div></div>}>

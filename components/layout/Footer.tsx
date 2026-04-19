@@ -2,10 +2,11 @@
 
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
+import { Suspense } from "react";
 
-export default function Footer() {
+function FooterContent() {
   const searchParams = useSearchParams();
-  const isEnglish = searchParams.get("lang") === "en";
+  const isEnglish = searchParams?.get("lang") === "en";
 
   const t = {
     desc: isEnglish ? "Immersive platform for discovering and organizing audiovisual content." : "Plateforme immersive de découverte et d'organisation de contenus audiovisuels.",
@@ -50,5 +51,13 @@ export default function Footer() {
         © {new Date().getFullYear()} Aurafy. {t.rights}
       </div>
     </footer>
+  );
+}
+
+export default function Footer() {
+  return (
+    <Suspense fallback={null}>
+      <FooterContent />
+    </Suspense>
   );
 }

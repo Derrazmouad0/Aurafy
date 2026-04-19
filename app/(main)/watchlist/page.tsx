@@ -1,21 +1,20 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, Suspense } from "react";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import { useSession } from "next-auth/react";
 import MovieCard from "../../../components/movies/MovieCard";
 
-export default function WatchlistPage() {
+function WatchlistContent() {
   const { data: session, status } = useSession();
   const [movies, setMovies] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
   const searchParams = useSearchParams();
-  const isEnglish = searchParams.get("lang") === "en";
+  const isEnglish = searchParams?.get("lang") === "en";
 
   useEffect(() => {
     if (status === "authenticated") {
-      // On passe la langue à l'API pour récupérer les bons titres !
       fetch(`/api/watchlist/details${isEnglish ? '?lang=en' : ''}`)
         .then(res => res.json())
         .then(data => {
@@ -91,5 +90,13 @@ export default function WatchlistPage() {
         )}
       </div>
     </main>
+  );
+}
+
+export default function WatchlistPage() {
+  return (
+    <Suspense fallback={<div className="min-h-screen bg-deepBlack"></div>}>
+      <WatchlistContent />
+    </Suspense>
   );
 }

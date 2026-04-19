@@ -1,18 +1,17 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, Suspense } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
 import { useSession } from "next-auth/react";
 
-export default function WatchlistButton({ item }: { item: any }) {
+function WatchlistButtonContent({ item }: { item: any }) {
   const [inWatchlist, setInWatchlist] = useState(false);
   const [loading, setLoading] = useState(false);
   const { data: session } = useSession();
   const searchParams = useSearchParams();
   const router = useRouter();
-  const isEnglish = searchParams.get("lang") === "en";
+  const isEnglish = searchParams?.get("lang") === "en";
 
-  // DÉTECTION DU TYPE : Film ou Série
   const mediaType = item.media_type || (item.first_air_date ? 'tv' : 'movie');
   const itemKey = `${mediaType}_${item.id}`;
 
@@ -22,7 +21,6 @@ export default function WatchlistButton({ item }: { item: any }) {
         .then(res => res.json())
         .then(data => {
           const list = data.watchlist || [];
-          // On vérifie le nouveau format (tv_123) ou l'ancien format buggé (123)
           setInWatchlist(list.includes(itemKey) || list.includes(String(item.id)));
         })
         .catch(err => console.error("Erreur chargement watchlist", err));
@@ -40,7 +38,6 @@ export default function WatchlistButton({ item }: { item: any }) {
       const res = await fetch("/api/watchlist", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        // ON ENVOIE LE TYPE ET L'ID !
         body: JSON.stringify({ mediaId: item.id, mediaType })
       });
 
@@ -81,5 +78,13 @@ export default function WatchlistButton({ item }: { item: any }) {
         </>
       )}
     </button>
+  );
+}
+
+export default function WatchlistButton(props: { item: any }) {
+  return (
+    <Suspense fallback={null}>
+      <WatchlistButtonContent {...props} />
+    </Suspense>
   );
 }
